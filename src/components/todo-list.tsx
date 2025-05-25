@@ -51,17 +51,19 @@ const TodoList = () => {
 					))}
 				</div>
 			) : null}
-			<div className="flex flex-col gap-3">
-				<span className="text-xs">Recent</span>
-				{unpinnedTodos.map((t) => (
-					<Todo
-						key={t.id}
-						t={t}
-						todoList={todoList}
-						setTodoList={setTodoList}
-					/>
-				))}
-			</div>
+			{unpinnedTodos.length > 0 ? (
+				<div className="flex flex-col gap-3">
+					<span className="text-xs">Recent</span>
+					{unpinnedTodos.map((t) => (
+						<Todo
+							key={t.id}
+							t={t}
+							todoList={todoList}
+							setTodoList={setTodoList}
+						/>
+					))}
+				</div>
+			) : null}
 		</div>
 	);
 };
