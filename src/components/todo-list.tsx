@@ -1,26 +1,36 @@
 "use client";
+import { db } from "@/lib/db";
 import type { TodoType } from "@/types/todo";
 import { Pin } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Todo from "./todo";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
 const TodoList = () => {
 	const [input, setInput] = useState<string>("");
-	const [todoList, setTodoList] = useState<TodoType[]>([]);
+	let [todoList, setTodoList] = useState<TodoType[]>([]);
 
-	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		const newTodo: TodoType = {
-			id: todoList.length + 1,
+		const newTodo = await db.todos.add({
 			text: input,
 			completed: false,
 			isPinned: false,
-		};
+		});
 		setTodoList((prev) => [...prev, newTodo]);
 		setInput("");
+		getAllTodos();
 	};
+
+	const getAllTodos = async () => {
+		todoList = await db.todos.toArray();
+		setTodoList(todoList);
+	};
+
+	useEffect(() => {
+		getAllTodos();
+	});
 
 	const pinnedTodos = todoList.filter((t) => t.isPinned);
 	const unpinnedTodos = todoList.filter((t) => !t.isPinned);
