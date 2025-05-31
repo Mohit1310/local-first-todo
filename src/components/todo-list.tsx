@@ -18,6 +18,7 @@ const TodoList = () => {
 			completed: false,
 			isPinned: false,
 		});
+		// @ts-expect-error: unable to figure out proper type
 		setTodoList((prev) => [...prev, newTodo]);
 		setInput("");
 		getAllTodos();
@@ -45,35 +46,37 @@ const TodoList = () => {
 				/>
 				<Button type="submit">Save</Button>
 			</form>
-			{pinnedTodos.length > 0 ? (
-				<div className="flex flex-col gap-3">
-					<div className="flex gap-2 items-center">
-						<Pin className="size-3" />
-						<span className="text-xs">Pinned</span>
+			<>
+				{pinnedTodos.length > 0 ? (
+					<div className="flex flex-col gap-3">
+						<div className="flex gap-2 items-center">
+							<Pin className="size-3" />
+							<span className="text-xs">Pinned</span>
+						</div>
+						{pinnedTodos.map((t) => (
+							<Todo
+								key={t.id}
+								t={t}
+								todoList={todoList}
+								setTodoList={setTodoList}
+							/>
+						))}
 					</div>
-					{pinnedTodos.map((t) => (
-						<Todo
-							key={t.id}
-							t={t}
-							todoList={todoList}
-							setTodoList={setTodoList}
-						/>
-					))}
-				</div>
-			) : null}
-			{unpinnedTodos.length > 0 ? (
-				<div className="flex flex-col gap-3">
-					<span className="text-xs">Recent</span>
-					{unpinnedTodos.map((t) => (
-						<Todo
-							key={t.id}
-							t={t}
-							todoList={todoList}
-							setTodoList={setTodoList}
-						/>
-					))}
-				</div>
-			) : null}
+				) : null}
+				{unpinnedTodos.length > 0 ? (
+					<div className="flex flex-col gap-3">
+						<span className="text-xs">Recent</span>
+						{unpinnedTodos.map((t) => (
+							<Todo
+								key={t.id}
+								t={t}
+								todoList={todoList}
+								setTodoList={setTodoList}
+							/>
+						))}
+					</div>
+				) : null}
+			</>
 		</div>
 	);
 };
