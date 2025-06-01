@@ -10,6 +10,9 @@ import { Input } from "./ui/input";
 const TodoList = () => {
 	const [input, setInput] = useState<string>("");
 	let [todoList, setTodoList] = useState<TodoType[]>([]);
+	const [offset, setOffset] = useState(0);
+	const [limit, setLimit] = useState(10);
+	const [loading, setLoading] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -25,16 +28,25 @@ const TodoList = () => {
 	};
 
 	const getAllTodos = async () => {
-		todoList = await db.todos.toArray();
+		todoList = await db.todos.offset(offset).limit(limit).toArray();
 		setTodoList(todoList);
 	};
 
+	// biome-ignore lint: need to use like this
 	useEffect(() => {
 		getAllTodos();
-	});
+	}, []);
 
 	const pinnedTodos = todoList.filter((t) => t.isPinned);
 	const unpinnedTodos = todoList.filter((t) => !t.isPinned);
+
+	const loadMoreTodos = () => {
+		setOffset(offset + limit);
+		setLimit(limit + 10);
+		setLoading(true);
+		getAllTodos();
+		setLoading(false);
+	};
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -54,12 +66,7 @@ const TodoList = () => {
 							<span className="text-xs">Pinned</span>
 						</div>
 						{pinnedTodos.map((t) => (
-							<Todo
-								key={t.id}
-								t={t}
-								todoList={todoList}
-								setTodoList={setTodoList}
-							/>
+							<Todo key={t.id} t={t} onTodoChange={getAllTodos} />
 						))}
 					</div>
 				) : null}
@@ -67,15 +74,15 @@ const TodoList = () => {
 					<div className="flex flex-col gap-3">
 						<span className="text-xs">Recent</span>
 						{unpinnedTodos.map((t) => (
-							<Todo
-								key={t.id}
-								t={t}
-								todoList={todoList}
-								setTodoList={setTodoList}
-							/>
+							<Todo key={t.id} t={t} onTodoChange={getAllTodos} />
 						))}
 					</div>
 				) : null}
+				{loading ? (
+					<p>loading...</p>
+				) : (
+					<Button onClick={loadMoreTodos}>Load More</Button>
+				)}
 			</>
 		</div>
 	);

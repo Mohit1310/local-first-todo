@@ -8,12 +8,10 @@ import { Input } from "./ui/input";
 
 const Todo = ({
 	t,
-	todoList,
-	setTodoList,
+	onTodoChange,
 }: {
 	t: TodoType;
-	todoList: TodoType[];
-	setTodoList: React.Dispatch<React.SetStateAction<TodoType[]>>;
+	onTodoChange: () => void;
 }) => {
 	const [input, setInput] = useState<string>(t.text);
 
@@ -23,6 +21,7 @@ const Todo = ({
 	) => {
 		try {
 			await db.todos.update(id, updates);
+			onTodoChange();
 			// biome-ignore lint: error must be of type any
 		} catch (error: any) {
 			throw new Error("Failed to update todo:", error.message);
@@ -31,14 +30,21 @@ const Todo = ({
 
 	// biome-ignore lint: unecessary warning
 	useEffect(() => {
-		updateTodo(t.id, { text: input });
-	}, [input]);
+		const debounceTimeout = setTimeout(() => {
+			if (input !== t.text) {
+				// Only update if the input has actually changed
+				updateTodo(t.id, { text: input });
+			}
+		}, 500); // Debounce the update to avoid excessive DB writes
+
+		return () => clearTimeout(debounceTimeout);
+	}, [input, t.id, t.text]);
 
 	const deleteTodo = async (id: number) => {
 		const todo = await db.todos.get(id);
 		if (!todo) return;
 		await db.todos.delete(id);
-		setTodoList(todoList.filter((t) => t.id !== id));
+		onTodoChange();
 	};
 
 	return (
